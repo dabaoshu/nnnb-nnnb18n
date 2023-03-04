@@ -3,7 +3,7 @@
 const { program } = require('commander');
 const pkg = require('../package.json');
 const config = require('./config');
-const createServer = require('../src/localeServer');
+const createServer = require('../dist/localeServer');
 program.name('locales').version(pkg.version).description('启动本地翻译服务');
 const usageList = [];
 Object.entries(config).forEach(
@@ -18,4 +18,5 @@ program.on('--help', function () {
 });
 program.parse(process.argv);
 const langConfig = program.opts(); // 启动服务所需要的信息
+
 createServer(langConfig);

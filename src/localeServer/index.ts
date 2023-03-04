@@ -1,24 +1,16 @@
-const fs = require('fs');
-const path = require('path');
-const cnchars = require('cn-chars');
-const ignore = require('ignore');
-const { getFiles, Logger, mergeOption } = require('../utils/utils');
-const { formatMessageRegexpAll, formatMessageRegexp } = require('./const');
-let ignoreFiles;
-const fileExts = ['.ts', '.js', '.jsx', 'tsx'];
-const LogMessage = {
-  fileRead: '文件读取错误',
-  fileWrite: '文件写入错误',
-  regexp: '字符匹配错误',
-};
+import path from "path"
+import cnchars from 'cn-chars'
+// import ignore from 'ignore'
+import fs from 'fs'
+import { getFiles, Logger, getAbsolutePath } from '../utils/utils'
+import {
+  formatMessageRegexpAll,
+  formatMessageRegexp,
+  LogMessage,
+  fileExts,
+} from './const'
 
-/**
- * 描述
- * @date 2023-02-28
- * @param {Map<string,string>} zipMap
- * @returns {string}
- */
-const creatTemplate = (zipMap) => {
+const creatTemplate = (zipMap: Map<string, string>) => {
   let content = '';
   zipMap.forEach((val, key) => {
     content = `${content}\n  "${key}": "${val}", `;
@@ -29,12 +21,6 @@ const creatTemplate = (zipMap) => {
 };
 
 const translateDocBylang = {
-  /**
-   * 描述
-   * @date 2023-02-28
-   * @param {LocalesServer} server
-   * @returns {any}
-   */
   'zh-CN'(server) {
     const content = creatTemplate(server.zipMap);
     server.langMap.set('zh-CN', content);
@@ -63,22 +49,26 @@ const translateDocBylang = {
  * {translateDoc} 服务自定义翻译方法
  */
 class LocalesServer {
+  single: boolean
+  lang: string[]
+  inputPath: string
+  outputPath: string
+  fileMap: Map<string, { [key: string]: any }>
+  zipMap: Map<string, string>
+  langMap: Map<string, string>
+  _translateDocBylang: { [key: string]: (sever: LocalesServer) => void }
+  options: any
   constructor(options, translateDoc = {}) {
     this.options = options;
-    this.lang = (options.lang || '').split(',');
-    this.readPath =
-      options.path === '1'
-        ? path.join(process.cwd(), options.directory)
-        : options.directory;
-    this.outputPath =
-      options.path === '1'
-        ? path.join(process.cwd(), options.outputPath)
-        : options.outputPath;
-
+    this.single = options.single; //boolean 是否输出为单个locales文件
+    this.lang = (options.lang || '').split(','); // 需要翻译的语言
+    this.inputPath = getAbsolutePath(options.directory); // 输入文件夹
+    this.outputPath = getAbsolutePath(options.outputPath); // 输出文件夹
     this.fileMap = new Map();
     this.zipMap = new Map(); // 原始模板的key value
     this.langMap = new Map(); // zh cn => content
     this._translateDocBylang = { ...translateDocBylang, ...translateDoc };
+    // this.matchMetal = options.matchMetal // 翻译对象
   }
 
   start = () => {
@@ -86,19 +76,22 @@ class LocalesServer {
   };
 
   _parse = (content = '') => {
-    let localeObj = {};
+    let localeObj: any = {};
     const strlist = content.match(formatMessageRegexpAll);
-    strlist.forEach((str, i) => {
-      const matchRes = str.match(formatMessageRegexp)[1];
-      const functionStr = `
-        const a ={ ${matchRes} }
-        return a
-      `;
-      const a = new Function(functionStr);
-      const { id, defaultMessage } = a();
-      localeObj[id] = defaultMessage;
-    });
-    return localeObj;
+    if (strlist) {
+      strlist.forEach((str, i) => {
+        const matchRes = str.match(formatMessageRegexp)[1]
+        const functionStr = `
+          const a ={ ${matchRes} }
+          return a
+        `;
+        const a = new Function(functionStr);
+        const { id, defaultMessage } = a();
+        localeObj[id] = defaultMessage;
+      });
+      return localeObj;
+    }
+    return {};
   };
 
   translateDoc = () => {
@@ -130,7 +123,7 @@ class LocalesServer {
   };
 
   // 识别文件的id value
-  compiler(file) {
+  compiler(file: string) {
     const flieExt = path.extname(file);
     if (fileExts.includes(flieExt)) {
       Logger.info('讀取文件：', file);
@@ -144,7 +137,7 @@ class LocalesServer {
   read = () => {
     Logger.info('开始读取');
     try {
-      const allFiles = getFiles(this.readPath, []);
+      const allFiles = getFiles(this.inputPath, []);
       allFiles.forEach((file) => {
         this.compiler(file);
       });
@@ -170,9 +163,13 @@ class LocalesServer {
   };
 }
 
-module.exports = function createServer(config) {
+
+export default function createServer(config) {
   Logger.info('正在启动服务');
+  console.log(config);
+
   const localesServer = new LocalesServer(config);
   localesServer.start();
   Logger.info('服务结束');
 };
+

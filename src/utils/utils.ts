@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const chalk = require('chalk');
-function getFiles(dirPath, fileList = [], ignores = []) {
+import fs from 'fs';
+import path from 'path';
+import chalk from 'chalk';
+export function getFiles(dirPath, fileList = [], ignores = []) {
   const stat = fs.statSync(dirPath);
   if (stat.isDirectory()) {
     //判断是不是目录
@@ -16,7 +16,7 @@ function getFiles(dirPath, fileList = [], ignores = []) {
   return fileList;
 }
 
-class Logger {
+export class Logger {
   static log(...arg) {
     console.log(...arg);
   }
@@ -34,34 +34,15 @@ class Logger {
   }
 }
 
-/**
- * Write the locale file
- * @param {{key: string, originalDefaultMessage: string, transformedDefaultMessage: string}[]} messages
- * @param {string} filePath
- */
-function writeFile(messages, filePath) {
-  logger.info('Writing file:', filePath);
-  try {
-    const directoryPath = pathTool.dirname(filePath);
-    const sourceObj = {};
-    (messages || []).forEach((item) => {
-      sourceObj[item.key] = item.transformedDefaultMessage;
-    });
-    if (!fs.existsSync(directoryPath)) {
-      fs.mkdirSync(directoryPath, { recursive: true });
-    }
-    fs.writeFileSync(filePath, JSON.stringify(sourceObj, null, 2));
-  } catch (error) {
-    logger.error('Failed to write file', error.toString());
-  }
-  logger.success('Successd to write file.');
-}
 
-const mergeOption = (defaultOptions, options) => {
+export const mergeOption = (defaultOptions, options) => {
   Object.keys(defaultOptions).forEach((name) => {
     if (defaultOptions[name] && typeof defaultOptions[name] == 'object') {
+      // 如果是数组直接返回相应对象就好了
+      if (Array.isArray(defaultOptions[name])) {
+        options[name] = options[name] || defaultOptions[name];
+      }
       const value = mergeOption(defaultOptions[name], options[name] || {});
-      console.log(name,value);
       options[name] = value;
     } else if (
       options[name] === undefined &&
@@ -73,4 +54,12 @@ const mergeOption = (defaultOptions, options) => {
   return options;
 };
 
-module.exports = { getFiles, Logger, writeFile, mergeOption };
+export const getAbsolutePath = (_path) => {
+  return path.isAbsolute(_path) ? _path : path.join(process.cwd(), _path);
+};
+
+
+
+// export default {
+//   getFiles, Logger, mergeOption, getAbsolutePath
+// }

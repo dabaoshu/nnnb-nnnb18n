@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./src/index.js"
+    "start": "ts-node ./src/index.ts",
+    "build": "tsc --build",
+    "clean": "tsc  --build --clean"
   },
   "bin": {
     "nnnb18n": "./bin/nnnb18n"
