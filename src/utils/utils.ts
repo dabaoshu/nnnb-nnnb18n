@@ -1,13 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
+import ignore from 'ignore';
 export function getFiles(dirPath, fileList = [], ignores = []) {
+  const ig = ignore().add(ignores)
+  // const ig = ignore().add(ignores)
+
+
   const stat = fs.statSync(dirPath);
   if (stat.isDirectory()) {
     //判断是不是目录
     const dirs = fs.readdirSync(dirPath);
     dirs.forEach((_dirPath) => {
-      getFiles(path.join(dirPath, _dirPath), fileList);
+      if (!ig.ignores(_dirPath)) {
+        getFiles(path.join(dirPath, _dirPath), fileList);
+      }
     });
   } else if (stat.isFile()) {
     //判断是不是文件
@@ -57,6 +64,8 @@ export const mergeOption = (defaultOptions, options) => {
 export const getAbsolutePath = (_path) => {
   return path.isAbsolute(_path) ? _path : path.join(process.cwd(), _path);
 };
+
+
 
 
 

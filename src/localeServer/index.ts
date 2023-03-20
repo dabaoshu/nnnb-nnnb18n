@@ -1,6 +1,4 @@
 import path from "path"
-import cnchars from 'cn-chars'
-// import ignore from 'ignore'
 import fs from 'fs'
 import { getFiles, Logger, getAbsolutePath } from '../utils/utils'
 import {
@@ -9,40 +7,11 @@ import {
   LogMessage,
   fileExts,
 } from './const'
+import { translate } from "./translator"
 
-const creatTemplate = (zipMap: Map<string, string>) => {
-  let content = '';
-  zipMap.forEach((val, key) => {
-    content = `${content}\n  "${key}": "${val}", `;
-  });
-  const _content = `export default {${content}
-}`;
-  return _content;
-};
 
-const translateDocBylang = {
-  'zh-CN'(server) {
-    const content = creatTemplate(server.zipMap);
-    server.langMap.set('zh-CN', content);
-  },
-  'zh-TW'(server) {
-    const twMap = new Map();
-    const transLang = (str) => {
-      const _str = [...str].map((i) => cnchars.toTraditionalChar(i)).join('');
-      return _str;
-    };
-    server.zipMap.forEach((val, key) => {
-      twMap.set(key, transLang(val));
-    });
-    const content = creatTemplate(twMap);
-    server.langMap.set('zh-TW', content);
-  },
-  'en-US'(server) {
-    Logger.warning('中文翻译英语需要设置翻译秘钥，暂不提供');
-    const content = creatTemplate(server.zipMap);
-    server.langMap.set('en-US', content);
-  },
-};
+
+
 /**
  * LocalesServer
  * {options} 服务配置
@@ -53,21 +22,23 @@ class LocalesServer {
   lang: string[]
   inputPath: string
   outputPath: string
+  exclude: string[]
   fileMap: Map<string, { [key: string]: any }>
   zipMap: Map<string, string>
   langMap: Map<string, string>
   _translateDocBylang: { [key: string]: (sever: LocalesServer) => void }
   options: any
-  constructor(options, translateDoc = {}) {
+  constructor(options,) {
     this.options = options;
     this.single = options.single; //boolean 是否输出为单个locales文件
     this.lang = (options.lang || '').split(','); // 需要翻译的语言
-    this.inputPath = getAbsolutePath(options.directory); // 输入文件夹
+    this.inputPath = getAbsolutePath((options.directory)); // 输入文件夹
     this.outputPath = getAbsolutePath(options.outputPath); // 输出文件夹
     this.fileMap = new Map();
     this.zipMap = new Map(); // 原始模板的key value
     this.langMap = new Map(); // zh cn => content
-    this._translateDocBylang = { ...translateDocBylang, ...translateDoc };
+    this.exclude = (options.exclude || [])
+    this._translateDocBylang = translate
     // this.matchMetal = options.matchMetal // 翻译对象
   }
 
@@ -75,15 +46,14 @@ class LocalesServer {
     this.read();
   };
 
-  _parse = (content = '') => {
+  private _parse = (content = '') => {
     let localeObj: any = {};
     const strlist = content.match(formatMessageRegexpAll);
     if (strlist) {
       strlist.forEach((str, i) => {
         const matchRes = str.match(formatMessageRegexp)[1]
         const functionStr = `
-          const a ={ ${matchRes} }
-          return a
+          return { ${matchRes} }
         `;
         const a = new Function(functionStr);
         const { id, defaultMessage } = a();
@@ -108,13 +78,17 @@ class LocalesServer {
           }
         });
       });
+      console.log('原始字典');
+
       this.lang.forEach((lang) => {
         if (this._translateDocBylang[lang]) {
+          console.log(this._translateDocBylang[lang]);
           this._translateDocBylang[lang](this);
         } else {
           Logger.warning(`暂不支持${lang}语言`);
         }
       });
+      return
       Logger.info('翻译结束，开始创建locals');
       this.write();
     } catch (error) {
@@ -137,7 +111,7 @@ class LocalesServer {
   read = () => {
     Logger.info('开始读取');
     try {
-      const allFiles = getFiles(this.inputPath, []);
+      const allFiles = getFiles(this.inputPath, [], this.exclude);
       allFiles.forEach((file) => {
         this.compiler(file);
       });
@@ -166,8 +140,6 @@ class LocalesServer {
 
 export default function createServer(config) {
   Logger.info('正在启动服务');
-  console.log(config);
-
   const localesServer = new LocalesServer(config);
   localesServer.start();
   Logger.info('服务结束');
