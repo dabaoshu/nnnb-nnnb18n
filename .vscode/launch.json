@@ -14,7 +14,7 @@
       "program": "${workspaceFolder}\\src\\index.ts",
       "preLaunchTask": "tsc",
       "outFiles": [
-        "${workspaceFolder}/lib/**/*.js"
+        "${workspaceFolder}/dist/**/*.js"
       ]
     }
   ]

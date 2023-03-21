@@ -1,12 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import chalk from 'chalk';
+import os from 'os'
 import ignore from 'ignore';
 export function getFiles(dirPath, fileList = [], ignores = []) {
   const ig = ignore().add(ignores)
-  // const ig = ignore().add(ignores)
-
-
   const stat = fs.statSync(dirPath);
   if (stat.isDirectory()) {
     //判断是不是目录
@@ -23,23 +20,7 @@ export function getFiles(dirPath, fileList = [], ignores = []) {
   return fileList;
 }
 
-export class Logger {
-  static log(...arg) {
-    console.log(...arg);
-  }
-  static success(...arg) {
-    console.log(chalk.green(...arg));
-  }
-  static info(...arg) {
-    console.log(chalk.cyan(...arg));
-  }
-  static error(...arg) {
-    console.log(chalk.red(...arg));
-  }
-  static warning(...arg) {
-    console.log(chalk.yellow(...arg));
-  }
-}
+
 
 
 export const mergeOption = (defaultOptions, options) => {
@@ -61,14 +42,48 @@ export const mergeOption = (defaultOptions, options) => {
   return options;
 };
 
+export const getProjectRoot = (_path: string) => {
+  return path.join(process.cwd(), _path)
+}
+
 export const getAbsolutePath = (_path) => {
   return path.isAbsolute(_path) ? _path : path.join(process.cwd(), _path);
 };
 
 
+interface LocalesConfig {
+  exclude: string[];
+  directory: string;
+  lang: string;
+  ext: string;
+  outputPath: string;
+  baiduAppId: string;
+  baiduKey: string;
+  openLog: boolean;
+}
 
+export const defineLocalesConfig = (config: Partial<LocalesConfig>) => {
+  const defaultConfig = {
+    exclude: ["node_modules", "git", "dist"],
+    directory: "",
+    lang: "zh-CN,zh-TW,en-US",
+    ext: "[.js|.jsx|.ts|.tsx]",
+    outputPath: "locales",
+    openLog: false
+  }
+  return mergeOption(defaultConfig, config)
+}
+export const readParentDir = (currentpath) => {
+  console.log(path.dirname(currentpath));
+}
 
+// 自下而上的读取文件夹来找到最近的文件
+export const tryReadFilebyParentDir = (fileName, currentPath) => {
+  const targetPath = path.resolve(currentPath, fileName)
+  const stat = fs.existsSync(targetPath)
+  if (stat) return targetPath
+  const ParentDir = path.dirname(currentPath)
+  if (ParentDir === currentPath) throw new Error().name=`已查找到最顶级目录还是找不到${fileName}文件,在${currentPath}下`;
+  return tryReadFilebyParentDir(fileName, ParentDir)
+}
 
-// export default {
-//   getFiles, Logger, mergeOption, getAbsolutePath
-// }

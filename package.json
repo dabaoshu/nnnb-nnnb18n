@@ -1,39 +1,50 @@
 {
-  "name": "nnnb-cra",
-  "version": "1.0.0",
-  "description": "nnnb的脚手架",
-  "main": "src/index.ts",
+  "name": "@nnnb/nnnb18n",
+  "version": "1.0.1",
+  "description": "nnnb的umi国际化翻译工具",
+  "main": "dist/index.js",
+  "typings": "./dist",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node ./src/test.ts",
-    "build": "rollup --config"
+    "start": "nodemon",
+    "build": "tsc"
   },
   "bin": {
-    "nnnb18n": "./bin/nnnb18n"
+    "nnnb18n": "./dist/server.js"
   },
-  "type": "module",
+  "files": [
+    "dist"
+  ],
   "author": "dabaoshu",
   "license": "ISC",
+  "keywords": [
+    "快速翻译工具",
+    "国际化",
+    "umi工具"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dabaoshu/nnnb-nnnb18n.git"
+  },
   "dependencies": {
     "@babel/core": "^7.21.0",
     "@babel/preset-env": "^7.20.2",
-    "@rollup/plugin-babel": "^6.0.3",
-    "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-typescript": "^11.0.0",
+    "axios": "^1.3.4",
     "chalk": "^4.1.2",
     "cheerio": "^1.0.0-rc.12",
     "cn-chars": "^0.1.1",
     "commander": "^10.0.0",
     "ejs": "^3.1.8",
     "ignore": "^5.2.4",
-    "mime": "^3.0.0",
-    "node-fetch": "^3.3.1"
+    "mime": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.14.6",
-    "rollup-plugin-cleandir": "^2.0.0",
     "tslib": "^2.5.0",
     "typescript": "^4.9.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

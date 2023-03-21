@@ -3,11 +3,7 @@ const formatMessageRegexp =
 
 const formatMessageRegexpAll = new RegExp(formatMessageRegexp, 'gm');
 
-const LogMessage = {
-  fileRead: '文件读取错误',
-  fileWrite: '文件写入错误',
-  regexp: '字符匹配错误',
-};
+
 const fileExts = ['.ts', '.js', '.jsx', '.tsx'];
 
 const matchMetal = {
@@ -18,6 +14,5 @@ const matchMetal = {
 export {
   formatMessageRegexpAll,
   formatMessageRegexp,
-  LogMessage,
   fileExts,
 }

@@ -1,14 +1,14 @@
 {
-    "restartable": "rs",
-    "ignore": [
-      ".git",
-      "node_modules/**/node_modules"
-    ],
-    "verbose": true,
-    "exec":"node nnnb18n",
-    "delay":2500,
-    "watch": [
-      "src/*.*"
-    ],
-    "ext": "js,json,html"
-  }
+  "restartable": "rs",
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules"
+  ],
+  "verbose": true,
+  "exec": "tsc && nnnb18n -d testdir",
+  "delay": 2500,
+  "watch": [
+    "src/**/*.*"
+  ],
+  "ext": "ts,js,json,html"
+}

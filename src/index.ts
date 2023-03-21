@@ -1,2 +1,2 @@
-export { default as createServer } from './localeServer'
-
+export { defineLocalesConfig } from './utils/utils'
+export { LocalesServer } from './localeServer'
