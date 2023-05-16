@@ -32,13 +32,15 @@ function paralleTask(tasks: any[], paralleCount = 2, errCount = 0) {
 
 export class ParalleTask {
   tasks: any[];
+  SucceessCbs: any[];
   canNext: boolean;
   paralleCount: number;
   private nextIndex: number;
   private finishCount: number;
   private finishErrCount: number;
   Promise: Promise<any[]>;
-  constructor(tasks, config = { paralleCount: 3 }) {
+  reslist: any[]
+  constructor(tasks, config = { paralleCount: 6 }) {
     this.tasks = tasks;
     this.canNext = true;
     this.nextIndex = 0;
@@ -46,7 +48,10 @@ export class ParalleTask {
     this.finishErrCount = 0;
     this.paralleCount = config.paralleCount;
     this.Promise = this.run();
+    this.SucceessCbs = []
+    this.reslist = new Array(this.tasks.length).fill(0);
   }
+
 
   run = () => {
     this.canNext = true;
@@ -57,15 +62,17 @@ export class ParalleTask {
         return;
       }
 
-      const reslist = new Array(taskLength).fill(0);
+      // const reslist = new Array(taskLength).fill(0);
       const finallyCb = (res, currentIndex) => {
         this.finishCount++;
-        reslist[currentIndex] = res;
+        this.reslist[currentIndex] = res;
         if (this.nextIndex < taskLength) {
           _run();
         } else if (this.finishCount === taskLength) {
-          console.log("全部完成");
-          resolve(reslist);
+          resolve(this.reslist);
+          this.SucceessCbs.map(SucceessCb => {
+            SucceessCb(this.reslist)
+          })
         }
       };
 
@@ -90,8 +97,10 @@ export class ParalleTask {
   };
 
   then = (callBack) => {
-    return this.Promise.then(callBack);
+    this.SucceessCbs.push((...agrs) => callBack(...agrs))
   };
+
+
 }
 
 export default paralleTask;

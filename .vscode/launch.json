@@ -16,6 +16,16 @@
       "outFiles": [
         "${workspaceFolder}/dist/**/*.js"
       ]
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "调试调度并发任务",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\src\\utils\\test.ts",
+      "preLaunchTask": "tsc",
+    },
   ]
 }
