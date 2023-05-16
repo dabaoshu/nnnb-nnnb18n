@@ -24,15 +24,10 @@ export default {
   "user.login.tip": "Please login",
 }
 ```
-## 使用说明 会支持两种使用方式
-区别在于 默认属性的支持度不一样
-项目级可以配置json文件来做到一些文件过滤之类的属性 做到项目级统一规范
-终端命令式 在于简单方便 能随时随地使用
-##### 1.在终端使用命令行 如 nnnb18n [-d <文件夹>]
+### 使用说明 
 
-##### 1.使用命令行 如 nnnb18n [-d <文件夹>]
-
-##### 如果在项目中使用配置需要配置locales.config.js
+##### 安装说明
+1. **在项目中使用**可以配置json文件来做到一些文件过滤之类的属性 做到项目级统一规范 这种需要是安装到项目级别下 可以通过在项目根目录下配置文件 locales.config.js 可通过 defineLocalesConfig 来做一些提示说明
 ```js
 const { defineLocalesConfig } = require('@nnnb/nnnb18n')
 // 建议注册百度翻译api 自己配置自己的
@@ -41,6 +36,14 @@ module.exports = defineLocalesConfig({
   baiduKey: "xxxx",
 })
 ```
+2. 如果**不在项目中使用** 可以不在项目中安装依赖使用的话 可以选择全局安装 在项目的上一级文件夹配置locales.config.js **此时不能再使用 defineLocalesConfig来进行辅助配置**
+
+##### 终端使用说明
+**推荐在终端使用 简单方便**
+* 1.使用命令行 如 nnnb18n [-d <文件夹>]
+
+
+
 ##### 敬请期待 todo 
 后续支持可配置式的函数名,理论支持所有的国际化翻译,还需要做
 如
